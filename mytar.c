@@ -61,6 +61,11 @@ void errf(int code, char* err_msg, char ch) {
     exit(code);
 }
 
+void assert_memory(void* ptr) {
+    if (ptr == NULL)
+        err(2, "out of memory");
+}
+
 int str_eq(const char* s1, const char* s2) {
     return (strcmp(s1, s2) == 0);
 }
@@ -93,6 +98,7 @@ void load_buffer_with_file(struct tar_state* this) {
     size_t size = get_file_size(fp);
     this->buff_size = size;
     this->archive_buffer = malloc(size);
+    assert_memory(this->archive_buffer);
 
     this->buff_end = (struct tar_record*)(this->archive_buffer + size);
 
@@ -335,6 +341,7 @@ void parse_args(struct tar_state* this) {
 void prepare_args(struct tar_state* this) {
     this->argc = this->raw_argc - 1;
     this->argv = malloc(sizeof(struct arg) * this->argc);
+    assert_memory(this->argv);
 
     for (int i = 1; i < this->raw_argc; i++) {
         this->argv[i - 1].value = this->raw_argv[i];
@@ -343,6 +350,23 @@ void prepare_args(struct tar_state* this) {
 
     this->found_files = malloc(sizeof(char*) * this->argc);
     this->files_from_args = malloc(sizeof(char*) * this->argc);
+
+    assert_memory(this->found_files);
+    assert_memory(this->files_from_args);
+}
+
+void free_memory(struct tar_state* this) {
+    if (this->argv != NULL)
+        free(this->argv);
+
+    if (this->found_files != NULL)
+        free(this->found_files);
+
+    if (this->files_from_args != NULL)
+        free(this->files_from_args);
+
+    if (this->archive_buffer != NULL)
+        free(this->archive_buffer);
 }
 
 void run_tar(struct tar_state* this) {
@@ -353,6 +377,8 @@ void run_tar(struct tar_state* this) {
     load_buffer_with_file(this);
 
     handle_archive(this);
+
+    free_memory(this);
 }
 
 
