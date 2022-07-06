@@ -1,4 +1,4 @@
-#include <stdio.h>
+#include <stdio.h>fwrite
 #include <stdlib.h>
 #include <errno.h>
 #include <string.h>
@@ -152,8 +152,8 @@ static struct tar_record* move_to_next_tar_record(struct tar_state* this, struct
 
 static void init_buffer_with_file(struct tar_state* this) {
 
-	if ((this->fp = fopen(this->archive_name, "r")) == NULL)
-		err(2, "error: cannot open specified archive");
+    if ((this->fp = fopen(this->archive_name, "r")) == NULL)
+        err(2, "error: cannot open specified archive");
 
     this->file_size = get_file_size(this->fp);
     this->archive_buffer = malloc(FILE_BUFFER_SIZE);
@@ -277,7 +277,7 @@ static void write_to_file(struct tar_state* this, FILE* out_fp, struct tar_recor
 }
 
 static void extract_file(struct tar_state* this, struct tar_record* header) { 
-	FILE *fp;
+    FILE *fp;
     
     if ((fp = fopen(header->name, "w")) == NULL)
         err(2, "error: cannot write to file");
