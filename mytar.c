@@ -6,10 +6,14 @@
 #define FILE_BUFFER_SIZE 1048576 // 1MB
 #define TAR_REC_SIZE (sizeof (struct tar_record))
 #define CHAR_SIZE sizeof(char)
+#define MEMBER_SIZE(type, member) sizeof(((type *)0)->member)
+
 struct arg {
     char* value;
     int handled;
 };
+
+#define TAR_RECORD__NAME_SIZE MEMBER_SIZE(struct tar_record, name)
 
 struct tar_record {
     char name[100];
@@ -83,13 +87,12 @@ void assert_not_zero(size_t a, char* msg) {
 
 #define str_eq(s1, s2) (strcmp(s1, s2) == 0)
 
-char* get_str_copy(char* s) {
-    size_t size = strlen(s);
-
-    char* cp = malloc(size);
+static char* get_name_copy(struct tar_record* rec) {
+    char* cp = malloc(TAR_RECORD__NAME_SIZE + 1);
     assert_memory(cp);
 
-    strcpy(cp, s);
+    strncpy(cp, rec->name, TAR_RECORD__NAME_SIZE);
+    cp[TAR_RECORD__NAME_SIZE] = '\0';
 
     return cp;
 }
@@ -326,7 +329,7 @@ static void handle_archive(struct tar_state* this) {
                 x_handle_file(this, curr_rec);
                        
             if (!this->handle_all_files)
-                this->found_files[this->found_files_count++] = get_str_copy(curr_rec->name);
+                this->found_files[this->found_files_count++] = get_name_copy(curr_rec);
         }
 
         curr_rec = move_to_next_tar_header(this, curr_rec);
